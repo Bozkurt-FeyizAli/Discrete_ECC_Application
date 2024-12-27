@@ -145,3 +145,91 @@ def run_comparison_tests(iterations=10):
 
     return results
 
+def print_results_table(results):
+    """
+    Sonuçları (KeyGen, Sign, Verify) şeklinde tabulate ile tabloya döker.
+    """
+    table_data = []
+    for r in results:
+        table_data.append([
+            r["algorithm"],
+            f"{r['keygen_ms']:.3f}",
+            f"{r['sign_ms']:.3f}",
+            f"{r['verify_ms']:.3f}"
+        ])
+
+    headers = ["Algorithm", "KeyGen (ms)", "Sign (ms)", "Verify (ms)"]
+    print("\n=== Comparion test results (ECC vs RSA) ===")
+    print(tabulate(table_data, headers=headers, tablefmt="grid"))
+def plot_comparison_chart(results):
+    """
+    ECC vs RSA sonuçlarını bar chart (grouped) formatında çizer ve 'comparison_results.png' kaydeder.
+    X ekseninde 4 grup: [ECC-256, ECC-521, RSA-2048, RSA-4096]
+    Her grupta 3 bar: [KeyGen, Sign, Verify]
+    """
+
+    # Algoritmaların sırası: ECC-256, ECC-521, RSA-2048, RSA-4096
+    order = ["ECC-256", "ECC-521", "RSA-2048", "RSA-4096"]
+
+    # 'results' listesinden verileri alırken sıralamayı garanti etmek için dict oluşturalım
+    # Örn: algo_dict["ECC-256"] = {"keygen_ms":..., "sign_ms":..., "verify_ms":...}
+    algo_dict = {r["algorithm"]: r for r in results}
+
+    # 3 ayrı liste: KeyGen, Sign, Verify (her biri 4 uzunlukta)
+    data_keygen = []
+    data_sign   = []
+    data_verify = []
+
+    for alg in order:
+        perf = algo_dict[alg]
+        data_keygen.append(perf["keygen_ms"])   # 4 eleman (her algoritma için)
+        data_sign.append(perf["sign_ms"])
+        data_verify.append(perf["verify_ms"])
+
+    # X ekseni üzerinde 4 grup (0..3)
+    x_indices = range(len(order))  # [0,1,2,3]
+    bar_width = 0.2
+
+    # Her grupta 3 bar olacak:
+    #  - KeyGen'i solda, 
+    #  - Sign ortada,
+    #  - Verify sağda çizdirelim.
+    x_keygen = [x - bar_width for x in x_indices]
+    x_sign   = x_indices
+    x_verify = [x + bar_width for x in x_indices]
+
+    # Grafik boyutu
+    plt.figure(figsize=(9, 5))
+
+    # 3 bar seti çiz
+    plt.bar(x_keygen, data_keygen, width=bar_width, color='blue',  label='KeyGen')
+    plt.bar(x_sign,   data_sign,   width=bar_width, color='green', label='Sign')
+    plt.bar(x_verify, data_verify, width=bar_width, color='red',   label='Verify')
+
+    # X ekseninde algoritma isimleri
+    plt.xticks(x_indices, order)
+    plt.ylabel("Süre (ms)")
+    plt.title("ECC vs. RSA Comparion (KeyGen, Sign, Verify)")
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig("comparison_results.png", dpi=300)
+    plt.show()
+
+
+def main():
+    print("=== ECC vs RSA Comparison Tests ===")
+
+    # 1) Testleri Çalıştır
+    results = run_comparison_tests(iterations=10)
+
+    # 2) Tablo Çıktısı
+    print_results_table(results)
+
+    # 3) Gruplu Bar Chart
+    plot_comparison_chart(results)
+
+    print("\nTestler tamamlandı. 'comparison_results.png' adlı grafik oluşturuldu.\n")
+
+if __name__ == "__main__":
+    main()
