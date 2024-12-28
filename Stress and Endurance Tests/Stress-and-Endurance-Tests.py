@@ -150,3 +150,64 @@ def run_stress_tests():
 
 def print_results_table(test_results):
     """
+    Test sonuçlarını tablo halinde yazdırır. 'tabulate' kütüphanesi yüklüyse, güzel ASCII tablosu kullanır.
+    """
+    headers = ["Test Name", "Result", "Details"]
+    table_data = []
+    for (test_name, is_ok, details) in test_results:
+        status_str = "PASS" if is_ok else "FAIL"
+        table_data.append([test_name, status_str, details])
+
+    if TABULATE_AVAILABLE:
+        print("\n=== STRES & DAYANIKLILIK TESTLERİ TABLOSU ===")
+        print(tabulate(table_data, headers=headers, tablefmt="grid"))
+    else:
+        print("\n=== STRES & DAYANIKLILIK TESTLERİ TABLOSU (Manuel) ===")
+        print(headers)
+        for row in table_data:
+            print(row)
+
+def plot_results_bar_chart(test_results):
+    """
+    PASS/FAIL durumunu 1/0 olarak çizerek basit bir bar chart oluşturur.
+    """
+    test_names = [r[0] for r in test_results]
+    pass_fail_values = [1 if r[1] else 0 for r in test_results]
+
+    plt.figure(figsize=(7, 4))
+    bars = plt.bar(test_names, pass_fail_values,
+                   color=['green' if v == 1 else 'red' for v in pass_fail_values])
+    plt.ylim([0, 1.2])
+    plt.title("Stress & Endurance Tests (Bar Chart)")
+    plt.xticks(rotation=15)
+
+    # Barların üzerine PASS/FAIL etiketleri
+    for idx, bar in enumerate(bars):
+        label = "PASS" if pass_fail_values[idx] == 1 else "FAIL"
+        plt.text(bar.get_x() + bar.get_width()/2,
+                 bar.get_height() + 0.05,
+                 label,
+                 ha='center', va='bottom',
+                 color='black', fontweight='bold')
+
+    plt.tight_layout()
+    plt.savefig("stress_tests_bar_chart.png", dpi=300)
+    plt.show()
+
+def main():
+    print("\nKRİPTOLOJİ SİSTEMLERİ - STRES & DAYANIKLILIK TESTLERİ\n")
+
+    # Tüm testleri çalıştır
+    results = run_stress_tests()
+
+    # 1) Tablo formatında yazdır
+    print_results_table(results)
+
+    # 2) Bar Chart oluştur ve kaydet
+    plot_results_bar_chart(results)
+
+    print("\nTestler tamamlandı. 'stress_tests_bar_chart.png' grafiği oluşturuldu.\n")
+
+if __name__ == "__main__":
+    main()
+
