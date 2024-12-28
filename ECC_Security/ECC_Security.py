@@ -118,3 +118,53 @@ def print_results_table(results):
 def plot_results(results):
     """
     Her bir eğri için KeyGen, Sign ve Verify ortalama sürelerini
+    bar chart olarak plotlar ve kaydeder.
+    """
+    # X ekseninde eğrilerin isimlerini tutacağız
+    curve_names = [r['Curve'] for r in results]
+    keygen_avgs = [r['KeyGen_avg (ms)'] for r in results]
+    sign_avgs = [r['Sign_avg (ms)'] for r in results]
+    verify_avgs = [r['Verify_avg (ms)'] for r in results]
+    
+    x = range(len(results))  # 0, 1, 2, 3...
+
+    plt.figure(figsize=(10, 6))
+    
+    # Çubuk genişliği
+    bar_width = 0.25
+    # Her bir çubuğun x konumu için farklı offset
+    x_keygen = [i - bar_width for i in x]
+    x_sign = x
+    x_verify = [i + bar_width for i in x]
+    
+    # Barları çiz
+    plt.bar(x_keygen, keygen_avgs, width=bar_width, color='blue', label='KeyGen (ms)')
+    plt.bar(x_sign, sign_avgs, width=bar_width, color='green', label='Sign (ms)')
+    plt.bar(x_verify, verify_avgs, width=bar_width, color='red', label='Verify (ms)')
+    
+    # X ekseninin etiketleri
+    plt.xticks(x, curve_names)
+    plt.xlabel('ECC Curve')
+    plt.ylabel('Süre (ms)')
+    plt.title('ECC Performance Comparison')
+    plt.legend()
+    
+    # Otomatik kenar boşlukları ayarla
+    plt.tight_layout()
+    # Grafiği kaydet
+    plt.savefig("ecc_performance.png", dpi=300)
+    plt.show()
+
+def main():
+    results = run_ecc_tests()
+
+    # 1) Terminale tablo olarak yazdır
+    print("\n=== ECC Performans Test Sonuçları (ms) ===")
+    print_results_table(results)
+
+    # 2) Grafiği plotla ve dosyaya kaydet
+    plot_results(results)
+    print("\nGrafik 'ecc_performance.png' olarak kaydedildi.")
+
+if __name__ == "__main__":
+    main()
