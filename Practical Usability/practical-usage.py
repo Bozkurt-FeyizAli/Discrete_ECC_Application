@@ -98,3 +98,65 @@ def measure_usability_ecc():
     """
     Returns a random 'usability score' (0-10) for ECC.
     """
+    return random.uniform(0, 10)
+
+def measure_usability_rsa():
+    """
+    Returns a random 'usability score' (0-10) for RSA.
+    """
+    return random.uniform(0, 10)
+
+# =========================================
+# Compare ECC vs RSA
+# =========================================
+def compare_ecc_vs_rsa():
+    # 1) Power Consumption
+    ecc_power = measure_cpu_usage_ecc(duration=3, sign_iterations=50)
+    rsa_power = measure_cpu_usage_rsa(duration=3, sign_iterations=50)
+
+    # 2) Speed (Signature Time)
+    ecc_speed = measure_sign_time_ecc(iterations=5)
+    rsa_speed = measure_sign_time_rsa(iterations=5)
+
+    # 3) Usability
+    ecc_usability = measure_usability_ecc()
+    rsa_usability = measure_usability_rsa()
+
+    # Collect results
+    results = [
+        ("Power Consumption (avg CPU %)", ecc_power, rsa_power),
+        ("Speed (ms)", ecc_speed, rsa_speed),
+        ("Usability (0-10)", ecc_usability, rsa_usability),
+    ]
+
+    # Print results to console
+    print("=== ECC vs RSA Comparison ===")
+    for metric, ecc_val, rsa_val in results:
+        print(f"\n{metric}")
+        print(f"  ECC: {ecc_val:.2f}")
+        print(f"  RSA: {rsa_val:.2f}")
+
+    # Prepare grouped bar chart
+    metrics = [r[0] for r in results] 
+    ecc_vals = [r[1] for r in results]
+    rsa_vals = [r[2] for r in results]
+
+    x = range(len(metrics))  # [0, 1, 2]
+    bar_width = 0.35
+
+    plt.figure(figsize=(8, 5))
+
+    # Plot ECC bars
+    plt.bar([i - bar_width / 2 for i in x],
+            ecc_vals,
+            width=bar_width,
+            color='blue',
+            alpha=0.7,
+            label="ECC")
+
+    # Plot RSA bars
+    plt.bar([i + bar_width / 2 for i in x],
+            rsa_vals,
+            width=bar_width,
+            color='red',
+            alpha=0.7,
