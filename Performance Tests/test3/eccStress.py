@@ -68,3 +68,5 @@ plt.savefig("ecc_stress_test_performance.png", dpi=300)
 # Show the plot (optional)
 plt.show()
 
+print("Stress test completed successfully.")
+print("Results saved to 'ecc_stress_test_results.csv' and 'ecc_stress_test_performance.png'.")
