@@ -160,3 +160,32 @@ def compare_ecc_vs_rsa():
             width=bar_width,
             color='red',
             alpha=0.7,
+            label="RSA")
+
+    plt.xticks(x, metrics)
+    plt.ylabel("Measured Value")
+    plt.title("ECC vs. RSA - Power Consumption, Speed, Usability")
+    plt.legend()
+
+    # Annotate bars
+    def annotate_bars(x_positions, values):
+        ymax = max(values + [0])  # handle negative edge cases, if any
+        for (xp, val) in zip(x_positions, values):
+            plt.text(xp, val + 0.01*ymax, f"{val:.2f}",
+                     ha='center', va='bottom', fontsize=9)
+
+    annotate_bars([i - bar_width / 2 for i in x], ecc_vals)
+    annotate_bars([i + bar_width / 2 for i in x], rsa_vals)
+
+    plt.tight_layout()
+
+    # SAVE THE GRAPH
+    plt.savefig("ecc_vs_rsa_comparison.png", dpi=300)
+
+    plt.show()
+
+def main():
+    compare_ecc_vs_rsa()
+
+if __name__ == "__main__":
+    main()
