@@ -59,3 +59,94 @@ def concurrency_test(num_threads=10, iterations=5):
     details = (f"Threads={num_threads}, Iterations={iterations}, "
                f"TotalTime={total_time:.3f}s, Avg={avg_time:.3f}s, Max={max_time:.3f}s, Min={min_time:.3f}s")
     return is_ok, details
+
+# =========================================================
+# 2) BÜYÜK VERİ TESTİ
+# =========================================================
+def big_data_test(data_size_mb=5):
+    """
+    Büyük dosya/veri testini simüle eder.
+    - 'data_size_mb' MB büyüklüğünde rastgele veri oluşturur (os.urandom).
+    - Bu veriyi işlemek için basit bir döngü yapar (örneğin, hash hesaplama vb. - burada sadece dolanıyoruz).
+    - İşlem süresini ölçer. Süre çok uzunsa "başarısız" sayılabilir (temsili).
+    """
+    data_size_bytes = data_size_mb * 1024 * 1024
+    start = time.perf_counter()
+
+    # Rastgele veri oluştur
+    random_data = os.urandom(data_size_bytes)
+
+    # Örneğin, sadece verinin toplamı gibi saçma bir işlem yapacağız (zaman almak için)
+    total_sum = 0
+    for b in random_data:
+        total_sum += b  # CPU'da gereksiz döngü
+
+    end = time.perf_counter()
+    elapsed = end - start
+
+    # Örnek bir performans eşiği
+    # (Gerçek durumda, verinin şifrelenmesi, imzalanması veya hash'lenmesi gibi bir işlem koyabilirsiniz.)
+    threshold = 2.0  # 5 MB veriyi 2 saniyede işleyemezsek "FAIL" diyelim (örnek).
+    is_ok = (elapsed < threshold)
+
+    details = (f"DataSize={data_size_mb}MB, Elapsed={elapsed:.3f}s, Sum={total_sum}")
+    return is_ok, details
+
+# =========================================================
+# 3) HATA YÖNETİMİ TESTİ
+# =========================================================
+def error_handling_test():
+    """
+    Sistem hatalara veya beklenmeyen durumlara karşı ne kadar dayanıklı?
+    Burada sahte bir 'yanlış anahtar kullanma' veya 'yanlış parametre' senaryosu simüle edilir.
+
+    - Rastgele bir "key" gibi bir sayı seçiyoruz.
+    - Yanlış parametrede (örnek: negatif bir veri boyutu) fonksiyon çağırmayı deniyoruz ve
+      programın exception fırlatmasını bekliyoruz.
+    - Exception'ı doğru yakalıyor muyuz, yoksa sistem crash mi oluyor?
+
+    Bu tür testler, gerçek kripto sisteminde "anahtar yanlış" gibi durumları test etmeye benzetilebilir.
+    """
+    # Sahte "yanlış anahtar"
+    fake_key = -12345  # negatif değer, normalde mantıksız bir anahtar
+
+    try:
+        # Bilerek bir hata oluşturalım: negatif boyutta random data istenemez.
+        _ = os.urandom(fake_key)
+        # Eğer buraya gelmişsek exception fırlatılmadı, demek ki test "başarısız"
+        return False, "Beklenen hata gerçekleşmedi!"
+    except ValueError as e:
+        # Python'da os.urandom() negatif boyut için ValueError atar
+        details = f"Hata yönetimi başarılı: {str(e)}"
+        return True, details
+    except Exception as e:
+        # Farklı bir hata türü
+        details = f"Farklı bir hata yakalandı: {str(e)}"
+        return False, details
+
+# =========================================================
+# TESTLERİ ÇALIŞTIRIP RAPORLAMA
+# =========================================================
+def run_stress_tests():
+    """
+    Stres & Dayanıklılık adına 3 test (Yoğun Kullanım, Büyük Veri, Hata Yönetimi) çalıştırır.
+    Her testin sonucunu (Test Adı, Başarı Durumu, Detay) olarak listeler.
+    """
+    results = []
+
+    # Test 1: Yoğun Kullanım (Eşzamanlı İşlem)
+    ok_concurrency, det_concurrency = concurrency_test(num_threads=10, iterations=5)
+    results.append(("Concurrency Test", ok_concurrency, det_concurrency))
+
+    # Test 2: Büyük Veri
+    ok_bigdata, det_bigdata = big_data_test(data_size_mb=5)
+    results.append(("Big Data Test", ok_bigdata, det_bigdata))
+
+    # Test 3: Hata Yönetimi
+    ok_error, det_error = error_handling_test()
+    results.append(("Error Handling Test", ok_error, det_error))
+
+    return results
+
+def print_results_table(test_results):
+    """
