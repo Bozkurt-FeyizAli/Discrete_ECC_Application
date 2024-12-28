@@ -165,3 +165,40 @@ def plot_results_bar_chart(test_results):
     test_names = [r[0] for r in test_results]
     pass_fail_values = [1 if r[1] else 0 for r in test_results]
 
+    plt.figure(figsize=(7, 4))
+    bars = plt.bar(test_names, pass_fail_values, color=['green' if v == 1 else 'red' for v in pass_fail_values])
+    plt.ylim([0, 1.2])
+    plt.title("Compatibility & Integration Tests (Bar Chart)")
+    plt.xticks(rotation=15)
+
+    # Barların üzerine PASS/FAIL yazalım
+    for idx, bar in enumerate(bars):
+        status_label = "PASS" if pass_fail_values[idx] == 1 else "FAIL"
+        plt.text(
+            bar.get_x() + bar.get_width()/2,
+            bar.get_height() + 0.05,
+            status_label,
+            ha='center', va='bottom',
+            color='black', fontweight='bold'
+        )
+
+    plt.tight_layout()
+    plt.savefig("integration_tests_bar_chart.png", dpi=300)
+    plt.show()
+
+def main():
+    print("\nKRİPTOLOJİ SİSTEMLERİ - UYUMLULUK ve ENTEGRASYON TESTLERİ\n")
+
+    # Tüm testleri çalıştıralım
+    results = run_integration_tests()
+
+    # 1) Metin tablosu
+    print_results_table(results)
+
+    # 2) Bar Chart
+    plot_results_bar_chart(results)
+
+    print("\nTüm testler tamamlandı. 'integration_tests_bar_chart.png' adlı grafik oluşturuldu.\n")
+
+if __name__ == "__main__":
+    main()
