@@ -80,3 +80,46 @@ for key_size in rsa_key_sizes:
             salt_length=padding.PSS.MAX_LENGTH
         ),
         hashes.SHA256()
+    )
+    verification_time = time.time() - start_time
+
+    # Append results
+    results.append({
+        "Algorithm": "RSA",
+        "Key/Curve": f"{key_size}-bit",
+        "Key Generation Time (s)": key_gen_time,
+        "Signing Time (s)": signing_time,
+        "Verification Time (s)": verification_time
+    })
+
+# Convert results to DataFrame
+results_df = pd.DataFrame(results)
+
+# Check if DataFrame is empty
+if results_df.empty:
+    print("No data collected. Please check the test implementation.")
+else:
+    print("Collected data:")
+    print(results_df)
+
+    # Save results as CSV for documentation
+    results_df.to_csv("ecc_vs_rsa_performance_results.csv", index=False)
+
+    # Plot results
+    for metric in ["Key Generation Time (s)", "Signing Time (s)", "Verification Time (s)"]:
+        pivot_table = results_df.pivot(index="Key/Curve", columns="Algorithm", values=metric)
+        if pivot_table.empty:
+            print(f"No data available for metric: {metric}")
+            continue
+
+        plt.figure()
+        pivot_table.plot(kind="bar")
+        plt.title(f"Performance Comparison: {metric}")
+        plt.ylabel(metric)
+        plt.xlabel("Key/Curve")
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(f"performance_comparison_{metric.replace(' ', '_')}.png")
+        plt.show()
+
+print("Performance tests completed. Results saved as CSV and plots.")
