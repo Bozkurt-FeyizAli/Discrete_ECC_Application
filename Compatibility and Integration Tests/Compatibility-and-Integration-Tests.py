@@ -86,3 +86,82 @@ def check_tls_compatibility(test_url="https://www.google.com"):
     except Exception as e:
         return False, f"TLS isteğinde hata oluştu: {e}"
 
+def check_hardware_acceleration():
+    """
+    GPU (NVIDIA CUDA) olup olmadığını PyTorch aracılığıyla test eder.
+    PyTorch yoksa uyarı döndürür.
+    """
+    if not TORCH_INSTALLED:
+        return False, "PyTorch bulunamadı; GPU testi yapılamıyor."
+    
+    try:
+        if torch.cuda.is_available():
+            return True, "NVIDIA GPU (CUDA) kullanılabilir."
+        else:
+            return False, "CUDA GPU desteği bulunamadı."
+    except Exception as e:
+        return False, f"GPU kontrolü başarısız: {e}"
+
+def run_integration_tests():
+    """
+    4 farklı testi (Platform, API, TLS, Donanım) çalıştırıp sonuçları listede döndürür.
+    Her eleman: (Test Adı, Başarılı mı?, Ek Bilgi)
+    """
+    test_results = []
+
+    # 1) Platform Uyumluluğu
+    ok_platform, info_platform = check_platform_compatibility()
+    # info_platform bir sözlük -> metinleştirelim
+    platform_details = (
+        f"OS={info_platform['os_name']} {info_platform['os_version']}, "
+        f"Python={info_platform['python_version']}, "
+        f"cryptography={info_platform['crypto_version']}"
+    )
+    test_results.append(("Platform Compatibility", ok_platform, platform_details))
+
+    # 2) API Testi
+    ok_api, info_api = check_api_integration()
+    test_results.append(("API Integration", ok_api, info_api))
+
+    # 3) TLS/SSL Testi
+    ok_tls, info_tls = check_tls_compatibility()
+    if isinstance(info_tls, dict):
+        tls_details = f"OpenSSL={info_tls['openssl_version']}, Backend={info_tls['openssl_backend']}"
+    else:
+        tls_details = str(info_tls)
+    test_results.append(("TLS Compatibility", ok_tls, tls_details))
+
+    # 4) Donanım (GPU) Desteği
+    ok_hw, info_hw = check_hardware_acceleration()
+    test_results.append(("Hardware Acceleration", ok_hw, info_hw))
+
+    return test_results
+
+def print_results_table(test_results):
+    """
+    Test sonuçlarını tablo (ASCII) olarak yazdırır.
+    tabulate kütüphanesi yüklüyse ona göre, değilse manuel basit tablo şeklinde.
+    """
+    headers = ["Test Name", "Result", "Details"]
+    table_data = []
+    for name, status, details in test_results:
+        table_data.append([name, "PASS" if status else "FAIL", details])
+
+    if TABULATE_INSTALLED:
+        print("\n=== ENTEGRASYON TESTLERİ TABLOSU ===")
+        print(tabulate(table_data, headers=headers, tablefmt="grid"))
+    else:
+        # tabulate yoksa basit bir çıktıyla gösterelim
+        print("\n=== ENTEGRASYON TESTLERİ TABLOSU (MANUEL) ===")
+        print(headers)
+        for row in table_data:
+            print(row)
+
+def plot_results_bar_chart(test_results):
+    """
+    Test sonuçlarını (True/False) sayısal (1/0) değere dönüştürerek bar chart şeklinde çizer.
+    """
+    # Her testin adını ve PASS=1, FAIL=0 durumunu listeliyoruz
+    test_names = [r[0] for r in test_results]
+    pass_fail_values = [1 if r[1] else 0 for r in test_results]
+
