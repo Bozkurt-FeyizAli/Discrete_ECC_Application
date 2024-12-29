@@ -208,7 +208,7 @@ def plot_comparison_chart(results):
 
     # X ekseninde algoritma isimleri
     plt.xticks(x_indices, order)
-    plt.ylabel("Süre (ms)")
+    plt.ylabel("Time Passed (ms)")
     plt.title("ECC vs. RSA Comparion (KeyGen, Sign, Verify)")
     plt.legend()
 

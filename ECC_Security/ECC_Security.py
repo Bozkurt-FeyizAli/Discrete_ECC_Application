@@ -145,7 +145,7 @@ def plot_results(results):
     # X ekseninin etiketleri
     plt.xticks(x, curve_names)
     plt.xlabel('ECC Curve')
-    plt.ylabel('Süre (ms)')
+    plt.ylabel('Time Passed (ms)')
     plt.title('ECC Performance Comparison')
     plt.legend()
     
