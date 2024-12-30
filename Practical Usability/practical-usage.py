@@ -126,7 +126,7 @@ def compare_ecc_vs_rsa():
     results = [
         ("Power Consumption (avg CPU %)", ecc_power, rsa_power),
         ("Speed (ms)", ecc_speed, rsa_speed),
-        ("Usability (0-10)", ecc_usability, rsa_usability),
+        ("Usability (0-1.0)", ecc_usability, rsa_usability),
     ]
 
     # Print results to console
